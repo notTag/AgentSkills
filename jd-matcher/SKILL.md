@@ -1,9 +1,9 @@
 ---
 name: jd-matcher
 description: >
-  Analyze a job description against Nick's senior-engineering-leadership background and
+  Analyze a job description against the candidate's engineering-leadership background and
   produce a structured fit analysis: numeric score, fit verdict, honest gap list, and
-  positioning hooks. Trigger when Nick (1) types the bare word "JDMatcher", (2) sends a
+  positioning hooks. Trigger when the user (1) types the bare word "JDMatcher", (2) sends a
   message starting with "ANALYZE_JD_FIT" followed by JD text, or (3) pastes a JD with
   natural-language phrasing like "analyze this JD", "score this role", "is this a fit",
   "compare me to this job", "how do I stack up". Outputs a consistent format optimized
@@ -15,7 +15,7 @@ description: >
 
 ## Purpose
 
-Nick is in an active senior-engineering-leadership search. He evaluates many JDs. This
+The candidate is in an active engineering-leadership search and evaluates many JDs. This
 skill makes that evaluation fast, consistent, honest. Goals:
 
 1. **Triage in under a minute** — apply / pass / stretch decisions
@@ -24,22 +24,32 @@ skill makes that evaluation fast, consistent, honest. Goals:
 
 ---
 
-## Authoritative profile sources
+## Local profile config
 
-When analyzing, treat these as the truth about Nick's background. **Do not** invent
-experience or infer beyond what's documented.
+All candidate-specific values — name, profile-doc path, resume paths, output dir — live
+in **`profile.local.md`** in this skill's directory. That file is gitignored so personal
+paths and names never get committed.
 
-1. **`/Users/nicktag/Code/Projects/JobSearch/GoodFitDoc.md`** — primary canonical profile.
-   Defines what counts as a "good fit". Always read first.
-2. **`/Users/nicktag/Code/Resume/CompletedResumes/`** — three resume variants:
-   - `DoE/NickTagliasacchi-Resume-DoE.tex` — Director of Engineering scope
-   - `SrEM/NickTagliasacchi-Resume-SrEM.tex` — Senior Engineering Manager scope
-   - `EM/NickTagliasacchi-Resume-EM.tex` — Engineering Manager scope
+**Before doing anything else, read `profile.local.md`** (in the same directory as this
+`SKILL.md`) and use the paths and name it defines.
 
-   PDFs alongside .tex (same basename). Read the `.tex` for citing concrete bullets.
+- If `profile.local.md` is missing, tell the user to copy `profile.local.example.md` to
+  `profile.local.md` and fill it in, then stop.
+- Treat the sources it points to as the truth about the candidate's background. **Do not**
+  invent experience or infer beyond what's documented.
 
-3. **`/Users/nicktag/Code/AI/skills/jd-matcher/anchors.md`** — calibration anchors.
-   Read before scoring. **Never write to this file** — Nick curates it manually.
+The config defines these sources:
+
+1. **Canonical profile doc** (`GoodFitDoc.md` or equivalent) — defines what counts as a
+   "good fit". Always read first.
+2. **Resume variants dir** — three variants keyed by scope:
+   - **DoE** — Director of Engineering scope
+   - **SrEM** — Senior Engineering Manager scope
+   - **EM** — Engineering Manager scope
+
+   PDFs sit alongside each `.tex` (same basename). Read the `.tex` for citing concrete bullets.
+3. **Calibration anchors** (`anchors.md`) — read before scoring. **Never write to this
+   file** — the candidate curates it manually.
 
 If a JD requirement isn't backed by evidence in those three sources, treat it as a gap.
 
@@ -118,8 +128,8 @@ Pull company name and role title from the JD. If either is missing or ambiguous,
 
 ### Stage 2 — Read profile + anchors
 
-Before scoring, read:
-1. `GoodFitDoc.md` (always)
+Before scoring, read (paths come from `profile.local.md`):
+1. The canonical profile doc (always)
 2. The matching resume `.tex` based on inferred scope (DoE / SrEM / EM)
 3. `anchors.md` (for score calibration)
 
@@ -129,30 +139,50 @@ Use the format below. Then persist to disk (Stage 4).
 
 ### Stage 4 — Persist analysis
 
+Each company gets its own directory under the analyses root (defined in
+`profile.local.md`). The analysis file lives inside it, alongside an `Applied-FALSE`
+marker (flipped to `Applied-TRUE` by the user once they apply) and any later tailored
+resume artifacts (`.tex`, `.pdf`, etc.).
+
 Write the full analysis to:
 ```
-/Users/nicktag/Code/Projects/JobSearch/JobFit/analyses/<company>_<role>_MM-DD-YYYY.md
+<analyses-root>/Company-<CompanyName>/<company>_<role>_MM-DD-YYYY.md
 ```
+
+Rules for the directory:
+- `Company-<CompanyName>` — title-case the company name; preserve well-known internal
+  capitalization when the company brands it that way (e.g. `Company-HighArc`,
+  `Company-Hubspot`, `Company-Redpanda`, `Company-Smartsheet`).
+- Strip spaces and punctuation from `<CompanyName>` (e.g. "Smart Sheet Inc." → `Smartsheet`).
+- If the directory already exists, reuse it. Do NOT create a second dir for the same
+  company — multiple roles at one company go in the same `Company-<Name>/` folder.
 
 Rules for the filename:
 - Lowercase company and role
 - Replace spaces with `-`
 - Strip punctuation other than `-`
 - `MM-DD-YYYY` from today's date
-- If file exists, append ` -2`, ` -3`, etc. (don't overwrite — Nick may want to compare re-analyses)
+- If file exists, append ` -2`, ` -3`, etc. (don't overwrite — the user may want to compare re-analyses)
 
-Create `JobFit/analyses/` if missing.
+Rules for the `Applied-FALSE` marker:
+- On first creation of a `Company-<Name>/` dir, also create an empty `Applied-FALSE` file
+  inside it (e.g. `touch Company-Smartsheet/Applied-FALSE`).
+- If `Applied-TRUE` or `Applied-FALSE` already exists, leave it alone. The user toggles
+  this manually by renaming `Applied-FALSE` → `Applied-TRUE` once they apply.
+- Never create both markers in the same directory.
+
+Create the analyses root and `Company-<CompanyName>/` subdir if missing.
 
 After writing, include the file path at the bottom of the chat output:
 ```
-Saved: JobFit/analyses/<filename>.md
+Saved: <analyses-root>/Company-<CompanyName>/<filename>.md
 ```
 
 ---
 
 ## Output format
 
-Always use this structure. Consistency matters — Nick compares roles to each other.
+Always use this structure. Consistency matters — the user compares roles to each other.
 
 ```
 ## [Company] — [Role Title]
@@ -168,7 +198,7 @@ Always use this structure. Consistency matters — Nick compares roles to each o
 - [3–6 bullets.]
 
 ### Gaps & risks
-- [What the JD asks for that Nick can't cleanly demonstrate.]
+- [What the JD asks for that the candidate can't cleanly demonstrate.]
 - [Distinguish "missing experience" from "have it but resume doesn't show it well".]
 - [Flag deal-breakers vs. stretches explicitly.]
 
@@ -185,7 +215,7 @@ Always use this structure. Consistency matters — Nick compares roles to each o
 ### Verdict
 [1–2 sentences. Apply / strong apply / pass / apply only if X. No hedging.]
 
-Saved: JobFit/analyses/<filename>.md
+Saved: <analyses-root>/Company-<CompanyName>/<filename>.md
 ```
 
 ---
@@ -230,14 +260,14 @@ Adjust until ordering is honest. Do not write to anchors.md.
 - **Title says "Director" but scope is small-team IC-leaning** → same — score scope, flag.
 - **Multiple roles pasted at once** → run the analysis per role. Do not merge. Save each
   to its own file.
-- **Company only, no JD** → ask Nick to paste the JD. Don't guess.
+- **Company only, no JD** → ask the user to paste the JD. Don't guess.
 
 ---
 
 ## Tone
 
-- Direct. Senior leader, doing his own search. No cheerleading, no hedging.
+- Direct. Senior leader, doing their own search. No cheerleading, no hedging.
 - No "everyone has gaps" softening. Plain language about gaps.
 - "How to position" + "Tailoring suggestions" sections are where the value lives — make
   them actionable.
-- Whole output scannable. He's reading many of these.
+- Whole output scannable. The user is reading many of these.
