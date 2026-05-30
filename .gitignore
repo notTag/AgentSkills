@@ -1,10 +1,2 @@
-gsd-*
-humanizer
-pinia
-tailwindcss
-vite
-vite-plugin-federation
-vue
-
 # jd-matcher local profile (personal paths + name — never commit)
 jd-matcher/profile.local.md
