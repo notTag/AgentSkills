@@ -1,6 +1,6 @@
 ---
 name: agent-project-setup
-description: Scaffold (or audit + repair) the agent working structure for a git project — BACKLOG/, BUGS/, and WHITEBOARD.md. Idempotent. Adds ignore patterns to the GLOBAL gitignore, never the project's. Trigger on "/agent-project-setup", "set up agent project", "scaffold backlog and bugs".
+description: Scaffold (or audit + repair) the agent working structure for a git project — BACKLOG/, BUGS/, WHITEBOARD.md, and agent workflow rules in the project's CLAUDE.md. Idempotent. Adds ignore patterns to the GLOBAL gitignore, never the project's. Trigger on "/agent-project-setup", "set up agent project", "scaffold backlog and bugs".
 ---
 
 # agent-project-setup
@@ -73,8 +73,31 @@ clobber existing content.
    `WHITEBOARD.md` (don't add a duplicate). Add each pattern only if absent — re-runs
    must not duplicate lines.
 
-6. **Report.** List exactly what was created, moved, and which gitignore lines were
-   added/changed. If nothing was needed, say "already set up — no changes."
+6. **Project `CLAUDE.md` workflow rules** (the project's committed `CLAUDE.md`, NOT the
+   global one). Unlike the directories/whiteboard above, these rules are project policy
+   and belong in the repo's tracked `CLAUDE.md` — they are NOT gitignored.
+   - If `CLAUDE.md` is missing at the project root → create it.
+   - Append the rules block below, guarded by the marker comments so re-runs never
+     duplicate it. If the marker `<!-- agent-project-setup:workflow-rules -->` is already
+     present → leave it untouched (idempotent).
+   ```markdown
+   <!-- agent-project-setup:workflow-rules -->
+   ## Agent Workflow Rules
+
+   - Every feature gets its own git branch.
+   - Every branch gets its own git worktree.
+   - Branch names derive from the feature name:
+     - A `feat-NNN` item → branch `feat-NNN`.
+     - A `bug-NNN` item → branch `bug-NNN`.
+     - Otherwise, derive a short kebab-case branch name from the feature's title.
+   - If the branch name or worktree target is ambiguous, prompt the user with a TUI
+     offering the candidate options instead of guessing.
+   <!-- /agent-project-setup:workflow-rules -->
+   ```
+
+7. **Report.** List exactly what was created, moved, which gitignore lines were
+   added/changed, and whether the `CLAUDE.md` workflow rules were added. If nothing was
+   needed, say "already set up — no changes."
 
 ## Item formats (embedded — for adding items later, NOT created on setup)
 
@@ -131,7 +154,9 @@ Agent scratch space — not human-facing. Entry format:
 
 ## Rules
 
-- Idempotent. Re-running on a fully set-up project changes nothing.
-- Never write ignore patterns to the project `.gitignore` — global only.
+- Idempotent. Re-running on a fully set-up project changes nothing — the `CLAUDE.md`
+  rules block is marker-guarded against duplication.
+- Never write ignore patterns to the project `.gitignore` — global only. The `CLAUDE.md`
+  workflow rules are the one thing written into the project's tracked files, on purpose.
 - Use `git mv` if the loose file is tracked, plain `mv` otherwise.
 - Preserve existing file contents — only create when missing.
