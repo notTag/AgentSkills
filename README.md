@@ -16,6 +16,8 @@ skills/
 │   ├── SKILL.md           #   instructions + frontmatter
 │   └── README.md          #   human-facing summary
 ├── vendor/                # third-party skills, kept separate
+├── globalAgentMDs/        # source-of-truth global Claude config (CLAUDE.md, RTK.md)
+├── bootstrap.sh           # symlink the global config into ~/.claude on a machine
 └── CLAUDE.md              # context-mode routing rules for this repo
 ```
 
@@ -64,6 +66,17 @@ Third-party skills, kept separate so first-party work stays isolated:
 - `humanizer` — strip AI-isms from text.
 - `clean-code-typescript` — Clean Code practices for TS/React/Vue refactors.
 - `vue`, `pinia`, `vite`, `vite-plugin-federation`, `tailwindcss` — framework reference skills.
+
+## Global agent config
+
+`globalAgentMDs/` holds the machine-independent global Claude config (`CLAUDE.md` and its `@RTK.md` include) as the single version-controlled source of truth. `bootstrap.sh` wires it onto a machine by **symlinking** — not copying — so edits to the files in `globalAgentMDs/` propagate to every linked location automatically:
+
+```
+~/.claude/CLAUDE.md  →  globalAgentMDs/CLAUDE.md
+~/.claude/RTK.md     →  globalAgentMDs/RTK.md
+```
+
+New machine: clone this repo, then run `./bootstrap.sh` from the repo root. It backs up any pre-existing real file (`*.bak-<timestamp>`) before linking and is safe to re-run. Because the targets are symlinks into the repo, the clone is load-bearing — moving or deleting it leaves the global config dangling until you re-run `bootstrap.sh` from the new location.
 
 ## Adding a skill
 
