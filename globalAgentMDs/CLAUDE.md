@@ -10,6 +10,13 @@
 
 ---
 
+## Feature Development Flow
+
+- Default flow for focused work (feature/bug/chore), GSD-independent: named tmux session → git worktree off latest `main` → focused work → PR → review → cleanup → pull main. One worktree per task = no blocking, parallel work, resumable from any shell.
+- Full process: `~/Code/Projects/ClaudeBrain/workflow-documentation/feature-development-flow.md`
+
+---
+
 ## Whiteboard
 
 - Scratch space at `whiteboard.md` — Claude only, not human-readable

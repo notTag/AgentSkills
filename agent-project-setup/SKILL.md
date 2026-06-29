@@ -1,6 +1,6 @@
 ---
 name: agent-project-setup
-description: Scaffold (or audit + repair) the agent working structure for a git project — BACKLOG/, BUGS/, WHITEBOARD.md, and agent workflow rules in the project's CLAUDE.md. Idempotent. Adds ignore patterns to the GLOBAL gitignore, never the project's. Trigger on "/agent-project-setup", "set up agent project", "scaffold backlog and bugs".
+description: Scaffold (or audit + repair) the agent working structure for a git project — tracked BACKLOG/ and BUGS/ dirs, a tracked DOCS/ knowledge dir, WHITEBOARD.md, and agent workflow rules in the project's CLAUDE.md. Idempotent. Only WHITEBOARD.md is gitignored (via the GLOBAL gitignore, never the project's). Trigger on "/agent-project-setup", "set up agent project", "scaffold backlog and bugs".
 ---
 
 # agent-project-setup
@@ -20,19 +20,33 @@ A `.git` directory MUST exist in the current working directory (the project root
 
 ```
 <project-root>/
-├── BACKLOG/
+├── BACKLOG/              # tracked (committed, NOT gitignored)
 │   ├── BACKLOG.md        # index / overview of backlog items
 │   ├── backlog-001.md    # one file per item, zero-padded 3-digit, increments
 │   ├── backlog-002.md
 │   └── completed/        # done items moved here (keeps their filename)
-├── BUGS/
+├── BUGS/                 # tracked (committed, NOT gitignored)
 │   └── bug-001.md        # one file per bug, zero-padded 3-digit, increments
-└── WHITEBOARD.md         # agent scratch space
+├── WHITEBOARD.md         # agent scratch space (gitignored)
+└── DOCS/                 # tracked repo knowledge (committed, NOT gitignored)
+    ├── SETUP-RUN.md      # how to set up, build, and run the repo
+    ├── definitions.md    # 1-3 sentence definitions of tech + repo terms
+    ├── ARCHITECTURE.md   # component map + data flow — how the pieces fit
+    ├── CONVENTIONS.md    # code style, naming, and patterns to follow here
+    ├── GOTCHAS.md        # non-obvious pitfalls and fragile spots
+    └── TESTING.md        # how to run and write tests
 ```
 
 Do NOT pre-create `backlog-001.md` / `bug-001.md` on setup. Numbering starts at `001`
 when the first real item is added later (see Item formats below). Setup only creates
-dirs, `BACKLOG/BACKLOG.md`, `BACKLOG/completed/`, and `WHITEBOARD.md`.
+dirs, `BACKLOG/BACKLOG.md`, `BACKLOG/completed/`, `WHITEBOARD.md`, and the `DOCS/` seed
+files.
+
+`WHITEBOARD.md` is the only gitignored artifact — it's ephemeral agent scratch space.
+Everything else is **committed**: `BACKLOG/` and `BUGS/` are durable project tracking,
+and `DOCS/` is durable repo knowledge for humans and agents alike. None of these are
+added to the gitignore. Each `DOCS/` seed file holds a one-line stub describing what
+belongs in it; later sessions fill in the real content.
 
 ## Procedure
 
@@ -60,20 +74,25 @@ clobber existing content.
      template. If a lowercase `whiteboard.md` already exists, leave it — flag to user
      that both casings now exist and ask whether to rename.
 
-5. **Global gitignore** (NOT the project `.gitignore`). Resolve the global excludes
+5. **DOCS dir.** Create `DOCS/` if missing. For each seed file below, create it only if
+   absent (never clobber existing docs — re-runs leave filled-in content alone). Each is
+   created with its one-line stub from the DOCS seed templates section. `DOCS/` and its
+   files are committed, so do NOT add them to the gitignore.
+
+6. **Global gitignore** (NOT the project `.gitignore`). Resolve the global excludes
    file: `git config --global core.excludesfile` (here: `~/.gitignore_global`).
-   Ensure these patterns are present, appended under an `# agent project structure`
+   Ensure `WHITEBOARD.md` is present, appended under an `# agent project structure`
    header if not already there:
    ```
-   BACKLOG/
-   BUGS/
    WHITEBOARD.md
    ```
    If a lowercase `whiteboard.md` line exists in that file, replace it with
-   `WHITEBOARD.md` (don't add a duplicate). Add each pattern only if absent — re-runs
-   must not duplicate lines.
+   `WHITEBOARD.md` (don't add a duplicate). Only `WHITEBOARD.md` is gitignored —
+   `BACKLOG/` and `BUGS/` are committed, so do NOT add them to the gitignore. If a
+   prior run added `BACKLOG/` or `BUGS/` lines to the global gitignore, remove them.
+   Add the pattern only if absent — re-runs must not duplicate lines.
 
-6. **Project `CLAUDE.md` workflow rules** (the project's committed `CLAUDE.md`, NOT the
+7. **Project `CLAUDE.md` workflow rules** (the project's committed `CLAUDE.md`, NOT the
    global one). Unlike the directories/whiteboard above, these rules are project policy
    and belong in the repo's tracked `CLAUDE.md` — they are NOT gitignored.
    - If `CLAUDE.md` is missing at the project root → create it.
@@ -95,9 +114,9 @@ clobber existing content.
    <!-- /agent-project-setup:workflow-rules -->
    ```
 
-7. **Report.** List exactly what was created, moved, which gitignore lines were
-   added/changed, and whether the `CLAUDE.md` workflow rules were added. If nothing was
-   needed, say "already set up — no changes."
+8. **Report.** List exactly what was created, moved, which `DOCS/` seed files were added,
+   which gitignore lines were added/changed, and whether the `CLAUDE.md` workflow rules
+   were added. If nothing was needed, say "already set up — no changes."
 
 ## Item formats (embedded — for adding items later, NOT created on setup)
 
@@ -152,11 +171,64 @@ Agent scratch space — not human-facing. Entry format:
 `## [TYPE:key|YYYY-MM-DD] description` — types: TASK, FINDING, DECISION.
 ```
 
+### DOCS seed files
+
+Each `DOCS/` file is created with a heading and a one-sentence stub describing what it
+should hold. Later sessions replace the stub with real, repo-specific content.
+
+**DOCS/SETUP-RUN.md**
+```markdown
+# Setup & Run
+
+How to set up the environment, build, and run this repo — prerequisites, install
+commands, env vars, and the commands to start it locally.
+```
+
+**DOCS/definitions.md**
+```markdown
+# Definitions
+
+One-to-three-sentence definitions of the tech, domain terms, and project-specific
+concepts used in this repo.
+```
+
+**DOCS/ARCHITECTURE.md**
+```markdown
+# Architecture
+
+The high-level component map and data flow — what the major pieces are and how they
+fit together.
+```
+
+**DOCS/CONVENTIONS.md**
+```markdown
+# Conventions
+
+The code style, naming rules, and patterns to follow when working in this repo.
+```
+
+**DOCS/GOTCHAS.md**
+```markdown
+# Gotchas
+
+Non-obvious pitfalls, footguns, and fragile spots — the "looks wrong but isn't" notes
+that save wasted cycles.
+```
+
+**DOCS/TESTING.md**
+```markdown
+# Testing
+
+How to run the test suite, how to write new tests, and which tests guard core behavior.
+```
+
 ## Rules
 
 - Idempotent. Re-running on a fully set-up project changes nothing — the `CLAUDE.md`
   rules block is marker-guarded against duplication.
-- Never write ignore patterns to the project `.gitignore` — global only. The `CLAUDE.md`
-  workflow rules are the one thing written into the project's tracked files, on purpose.
+- Never write ignore patterns to the project `.gitignore` — global only, and only
+  `WHITEBOARD.md` is ignored. The `CLAUDE.md` workflow rules, the `DOCS/` tree, and the
+  `BACKLOG/` and `BUGS/` trees are written into the project's tracked files on purpose;
+  only `WHITEBOARD.md` is gitignored.
 - Use `git mv` if the loose file is tracked, plain `mv` otherwise.
 - Preserve existing file contents — only create when missing.

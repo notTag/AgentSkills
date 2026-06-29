@@ -102,7 +102,12 @@ This subcommand works the feature toward an actual delivery — it is not just a
 3. Implement the feature in the codebase, working toward each `Done When` criterion.
 4. `Status` stays `open` throughout. Do **not** mark it done yourself.
 5. When the user confirms the feature is delivered/accepted, set `Status: Done` and add a
-   `Done: <YYYY-MM-DD>` line under the header, then report.
+   `Done: <YYYY-MM-DD>` line under the header.
+6. **Sync the GitHub issue** (only if `feat-NNN.md` has an `- Issue: <url>` line and `gh`
+   is available): take the issue number `<n>` from that URL and run
+   `gh issue edit <n> --add-label status:done --remove-label status:open` then
+   `gh issue close <n>`. If it has no `- Issue:` line, skip silently.
+7. Report the path, issue state, and a one-line summary.
 
 ## Intake
 
@@ -131,6 +136,23 @@ a free-text **Other** field is auto-appended to every question — do NOT add an
 
 Derive a concise `<short title>` from the feature (one line, no trailing period).
 
+## GitHub issue (when in a git repo)
+
+After the file is written, if the current dir is a git repo with a GitHub `origin`
+remote AND `gh` is available, also open a GitHub issue mirroring the feature:
+
+1. Detect: `git remote get-url origin` matches `github.com` and `command -v gh` succeeds.
+   If either fails, skip this whole step silently — the file is still the source of truth.
+2. Title: the feature's `<short title>`. Body: the full `feat-NNN.md` contents.
+3. Labels (skill taxonomy, see `~/Code/Projects/ClaudeBrain/workflow-documentation/github-labels.sh`):
+   - always `type:feat`, `status:open`
+   - `priority:<low|med|high>` — only if the `Priority` field was set
+   - `bump:<patch|minor|major>` — only if the `Bump` field was set
+4. Create it: `gh issue create --title "<title>" --body-file FEATURES/feat-NNN.md --label type:feat,status:open[,priority:X][,bump:X]`
+5. If creation fails because a label is missing, run `github-labels.sh` once to create the
+   taxonomy, then retry the `gh issue create`.
+6. On success, add an `- Issue: <url>` line under the header in `feat-NNN.md`.
+
 ## Procedure
 
 1. Resolve fields via Intake above.
@@ -139,4 +161,5 @@ Derive a concise `<short title>` from the feature (one line, no trailing period)
 4. **Write immediately** — do NOT ask for confirmation after the TUI is submitted. TUI
    submission IS the confirmation. (Only the `/feat <text>` one-liner path may show a
    draft first, since it had no TUI step.)
-5. Report the created path and a one-line summary.
+5. Open the GitHub issue if applicable (see **GitHub issue** above).
+6. Report the created path, the issue URL (if any), and a one-line summary.

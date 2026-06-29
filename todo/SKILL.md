@@ -45,8 +45,27 @@ Example:
 
 - `/todo` with no args → display sorted list
 - `/todo add <text>` → append a new incomplete item; ask for priority if not specified
-- `/todo done <partial text>` → mark the matching item complete
+- `/todo done <partial text>` → mark the matching item complete. If the item line has a
+  trailing ` (#<n>)` and `gh` is available, also `gh issue close <n>` (skip silently
+  otherwise). Todo issues carry no `status:*` label, so closing is the only sync needed.
 - `/todo priority <partial text> <P1|P2|P3|P4>` → update priority tag on an item
+
+## GitHub issue (when in a git repo)
+
+On **`/todo add`** only (not on display, `done`, or `priority`), if the current dir is a
+git repo with a GitHub `origin` remote AND `gh` is available, also open a GitHub issue
+mirroring the new item:
+
+1. Detect: `git remote get-url origin` matches `github.com` and `command -v gh` succeeds.
+   If either fails, skip this step silently — `TODO.md` is still the source of truth.
+2. Title: the item text (without the `[Pn]` tag). Body: the item line verbatim.
+3. Labels (skill taxonomy, see `~/Code/Projects/ClaudeBrain/workflow-documentation/github-labels.sh`):
+   - always `type:todo`
+   - the priority tag as its own label: `P1` / `P2` / `P3` / `P4` (untagged → `P3`)
+4. Create it: `gh issue create --title "<text>" --body "<item line>" --label type:todo,P3`
+5. If creation fails because a label is missing, run `github-labels.sh` once to create the
+   taxonomy, then retry.
+6. On success, append ` (#<n>)` to the item line in `TODO.md` so the entry links to its issue.
 
 ## File location
 
