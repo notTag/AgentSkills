@@ -1,6 +1,6 @@
 # agent-project-setup
 
-Scaffold (or audit + repair) the agent working structure for a git project — `BACKLOG/`, `BUGS/`, and `WHITEBOARD.md`. Idempotent. Adds ignore patterns to the **global** gitignore, never the project's.
+Scaffold (or audit + repair) the agent working structure for a git project — tracked `BACKLOG/`, `BUGS/`, and `DOCS/` dirs plus a `WHITEBOARD.md`. Idempotent. Only `WHITEBOARD.md` is gitignored (via the **global** gitignore, never the project's); `BACKLOG/`, `BUGS/`, and `DOCS/` are committed.
 
 Also writes a set of **agent workflow rules** into the project's committed `CLAUDE.md` (marker-guarded, so re-runs don't duplicate them):
 
