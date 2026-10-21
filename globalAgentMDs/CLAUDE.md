@@ -17,6 +17,20 @@
 
 ---
 
+## Pull Requests — TOF Format
+
+- ALL PR bodies use Tabbed Outline Format (TOF). Spec: https://tabbedoutlineformat.com
+- Essentials: real tab chars for hierarchy, terse phrases, blank lines between groups, commands/values at leaf level
+- GitHub renders bodies as markdown → plain TOF breaks. Allowed markdown exceptions (TOF-GH), nothing else:
+  - `- ` prefix on every non-header line → tab-indented lines render as nested lists instead of code blocks
+  - `##` for root-level section headers → otherwise root lines merge into one paragraph
+  - backticks around commands, code, `<placeholders>` → bare `<angle-brackets>` get stripped as HTML
+  - ` — ` separator for inline key-value → mid-line tabs collapse to one space
+- Still banned: bold/italics, numbered lists, markdown links, prose paragraphs
+- Applies to `gh pr create` + `gh pr edit` in every repo — pass body via `--body-file` so tabs survive shell quoting
+
+---
+
 ## Whiteboard
 
 - Scratch space at `whiteboard.md` — Claude only, not human-readable
