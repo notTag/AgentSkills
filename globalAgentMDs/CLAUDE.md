@@ -17,6 +17,32 @@
 
 ---
 
+## Project Tracker — Ticket Status Updates
+
+- Prompt shaped `Ticket #N: <title>` + `Status: <lane>` = a ticket from the user's Project Tracker app. Keep its status in sync as the work moves
+- Lane moves by event (lane ids, not display names — names vary per board, e.g. `in-pr` = "Merge Request" on one, "In PR" on another):
+  - work starts → `in-development`
+  - PR opened → `in-pr`
+  - PR merged to `main` → `in-dev`
+  - shipped in a release → `in-production` (only when the user says so)
+- Move on the event itself, no need to ask. Report the move (from → to) in the reply
+- DB: `~/Library/Application Support/Project Tracker/project-tracker.sqlite`, edit with `/usr/bin/sqlite3`
+- App MUST be closed first (interim — revisit once DB updates go through the app instead of the file): it's sql.js — holds the whole DB in memory and rewrites the file on every save, so an open app silently clobbers the edit. Check `ps -axo pid,command` for `Project Tracker` or the repo's `node_modules/electron`. Running → ask the user to quit it, never write
+- Ticket `number` is unique per project, NOT globally (same number exists across projects). Always filter by `project_path` too
+- `project_path` = the repo's main checkout path, not a worktree path. Inside a worktree resolve it with `dirname "$(git rev-parse --path-format=absolute --git-common-dir)"`
+- Look up first, then update by the row's `id`:
+  ```sql
+  SELECT id, lane_id, title FROM tickets WHERE project_path = '<path>' AND number = <N>;
+  SELECT id, name FROM swim_lanes WHERE project_path = '<path>' ORDER BY position;
+  UPDATE tickets SET lane_id = '<lane-id>', updated_at = '<ISO-8601 UTC, ms, Z>' WHERE id = '<id>';
+  PRAGMA integrity_check;
+  ```
+- `updated_at` format: `2026-10-21T04:17:05.000Z` (`date -u +%Y-%m-%dT%H:%M:%S.000Z`)
+- Target lane missing from that board's `swim_lanes` → ask, don't invent one. `unassigned` is a virtual lane with no row — valid `lane_id` anyway
+- Back up the DB to the scratchpad before writing; delete the backup once `integrity_check` returns `ok` (Workspace Hygiene)
+
+---
+
 ## Pull Requests — TOF Format
 
 - ALL PR bodies use Tabbed Outline Format (TOF). Spec: https://tabbedoutlineformat.com
