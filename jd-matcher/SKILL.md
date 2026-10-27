@@ -111,6 +111,14 @@ Auto-skip without scoring if the JD title or top requirements contain any of:
 - Pure ML research / model-training leadership
 - Frontend-only specialist roles (e.g. "Staff Frontend Architect")
 
+**Player-coach exception (do NOT skip):** many leadership JDs are hybrid — lead a team
+*and* stay hands-on in code. Score these normally, do not auto-skip. A role is player-coach
+(keep it), not pure IC (skip it), when it asks for people leadership alongside the IC work:
+managing/mentoring/hiring, owning team roadmap/delivery, "founding engineer" or "lead
+engineer" who builds the team, "hands-on EM", "player-coach", "80% IC / 20% lead". Only
+auto-skip when the role is purely IC with no team-leadership responsibility. When it's a
+close call, score it and flag the IC/leadership balance in "How to position".
+
 When auto-skipping, output:
 
 ```
@@ -240,6 +248,10 @@ Weighting:
 - **Domain / industry fit** — material. Security SaaS depth helps for some roles, irrelevant for others.
 - **Scope of leadership** — material. "Manage managers" vs. "lead a team of 5" map very differently.
 - **Tech stack** — light unless JD requires deep specialization (e.g. "deep React/TS" for a frontend EM).
+- **Hands-on / IC expectation** — NOT a penalty. Player-coach and "stay in the code" asks
+  are table-stakes for modern eng leadership and a strength here — the candidate leads *and*
+  ships (Golden Tests, production project work). Score it as alignment, not a gap. Only count
+  it against fit if the role is so IC-heavy that people leadership all but disappears.
 
 ### Anchor sanity-check
 
