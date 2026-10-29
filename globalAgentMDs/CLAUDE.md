@@ -54,6 +54,51 @@
 
 ---
 
+## TOF — Tabbed Outline Format
+
+- **TOF** = Tabbed Outline Format, a plain-text note-taking spec. Spec: https://tabbedoutlineformat.com
+- Trigger: when the user says "... in TOF" / "TOF format" / "as TOF", output the content following this spec (inside a code fence so tabs survive rendering)
+- PR bodies are the one exception — they use the TOF-GH markdown allowances in the next section
+
+**Core rule:** hierarchy comes ENTIRELY from real tab characters (`\t`) — not spaces, not markdown. Each tab = one deeper level. Most content lives 1–3 levels deep.
+
+**Formatting rules:**
+1. Plain text only — NO markdown inside TOF (`#`, `**`, backticks, `-` bullets). Indentation IS the structure.
+2. Terse descriptions — short direct phrases, not full sentences.
+3. Blank lines separate logical groups / sections.
+4. Placeholders use `<angle-brackets>` (e.g. `<image-name>`).
+5. No trailing prose — need more context? nest one level deeper.
+6. Code/commands live at leaf level (deepest indent); its description sits one level above.
+
+**Entry patterns:**
+- *Description-then-content:* label at one level, its command/value indented one tab below.
+- *Category nesting:* group related entries under a shared parent label, nest as deep as needed.
+- *Inline key-value:* key + description on same line, separated by tab(s) (e.g. shortcuts, flag refs).
+- *Sub-explanations:* explain a flag/part by nesting it below the command.
+
+**Section headers** (root level, 0 tabs) — any of: bordered `#--- Title ---#`, underlined (title then `===`/`---`), ALL CAPS, or plain title line. Blank line before/after.
+
+**Example:**
+```
+#-----------Docker Cheat Sheet-----------#
+
+Basic Commands
+	Images
+		List images:
+			docker images
+		Pull an image:
+			docker pull <image-name>
+	Containers
+		List running containers:
+			docker ps
+
+mode select
+	esc 	normal mode
+	i   	insert mode
+```
+
+---
+
 ## Pull Requests — TOF Format
 
 - ALL PR bodies use Tabbed Outline Format (TOF). Spec: https://tabbedoutlineformat.com
