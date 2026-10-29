@@ -1,7 +1,13 @@
 ---
 name: whiteboard-put
-description: Capture relevant context from the current session into the project's whiteboard.md before /clear, so the next session can ramp up fast. Pass an optional destination path ("/whiteboard-put <path>") to instead export the whiteboard's contents to that path verbatim. Use when user says "/whiteboard-put", "save context", "checkpoint before clear", "export whiteboard to <path>", or signals they're about to /clear.
+description: "DEPRECATED — superseded by /session-handoff. Capture relevant context from the current session into the project's whiteboard.md before /clear, so the next session can ramp up fast. Pass an optional destination path (\"/whiteboard-put <path>\") to instead export the whiteboard's contents to that path verbatim. Use when user says \"/whiteboard-put\", \"save context\", \"checkpoint before clear\", \"export whiteboard to <path>\", or signals they're about to /clear."
+deprecated: true
+superseded_by: session-handoff
 ---
+
+> ⚠️ **DEPRECATED** — superseded by `/session-handoff` (latest-only overwrite, no
+> append taxonomy). Prefer `/session-handoff` (or `put`) for the clear→resume bridge.
+> This skill remains only for reference / legacy whiteboards.
 
 # whiteboard-put
 
@@ -29,7 +35,7 @@ The skill takes an optional path argument.
 
 ## Steps
 
-1. **Resolve path.** `<cwd>/whiteboard.md`. If missing, create with header from `workflow-documentation/claude-whiteboard-process.md` template if available, otherwise minimal header.
+1. **Resolve path.** `<cwd>/whiteboard.md`. If missing, create with header from the bundled `claude-whiteboard-process.md` (in this skill's directory) if available, otherwise minimal header.
 2. **Read current whiteboard** to avoid duplicating existing entries and to respect prune state.
 3. **Audit conversation** for ramp-up-worthy signal:
    - Active task / current goal

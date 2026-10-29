@@ -1,7 +1,12 @@
 ---
 name: whiteboard-get
-description: Retrieve and display the contents of the current project's whiteboard.md scratch file. Use when user says "/whiteboard-get", "show whiteboard", "read whiteboard", or asks what's on the whiteboard.
+description: "DEPRECATED — superseded by /session-handoff get. Retrieve and display the contents of the current project's whiteboard.md scratch file. Use when user says \"/whiteboard-get\", \"show whiteboard\", \"read whiteboard\", or asks what's on the whiteboard."
+deprecated: true
+superseded_by: session-handoff
 ---
+
+> ⚠️ **DEPRECATED** — superseded by `/session-handoff get` (`restore`). Prefer that
+> for the clear→resume bridge. This skill remains only for reference / legacy whiteboards.
 
 # whiteboard-get
 
