@@ -2,8 +2,9 @@
 name: bug
 version: 1.0.0
 description: |
-  Capture a bug into the current project's BUGS/ directory as a numbered
-  markdown file (bug-NNN.md). Parses a one-liner when given; falls back to
+  Capture a bug into the current project's .project/BUGS/ directory as a numbered
+  markdown file (bug-NNN.md), and add it to the .project/issue.html dashboard.
+  Parses a one-liner when given; falls back to
   interactive intake when fields are missing. Trigger on "/bug", "log a bug",
   "capture this bug", "file a bug".
 allowed-tools:
@@ -14,21 +15,21 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-# bug: Capture a bug to BUGS/bug-NNN.md
+# bug: Capture a bug to .project/BUGS/bug-NNN.md
 
-Log a bug as a numbered markdown file in the **current project's** `BUGS/` directory.
-This skill owns the bug file format. (`agent-project-setup` only creates the `BUGS/`
-dir; it does not define the per-bug template.)
+Log a bug as a numbered markdown file in the **current project's** `.project/BUGS/`
+directory. This skill owns the bug file format. (`project-setup` only creates the
+`.project/BUGS/` dir; it does not define the per-bug template.)
 
 ## Location
 
-- Always `<cwd>/BUGS/` — per-project, relative to the current working directory.
-- If `BUGS/` does not exist, create it (`mkdir -p BUGS`). Do not require
-  `agent-project-setup` to have run first.
+- Always `<cwd>/.project/BUGS/` — per-project, relative to the current working directory.
+- If `.project/BUGS/` does not exist, create it (`mkdir -p .project/BUGS`). Do not require
+  `project-setup` to have run first.
 
 ## Numbering
 
-1. Scan `BUGS/` for the highest existing `bug-NNN.md`.
+1. Scan `.project/BUGS/` for the highest existing `bug-NNN.md`.
 2. Increment, zero-pad to 3 digits. First bug is `001`.
 3. Filename: `bug-NNN.md` (lowercase `bug-`, uppercase `.md`, e.g. `bug-007.md`).
 
@@ -73,8 +74,8 @@ Field rules:
 - **`/bug fix bug-XXX`** — work the bug toward a fix (see Fix below).
 
 `bug-XXX` may be given as `bug-003`, `003`, or `3` — normalize to the zero-padded
-`bug-NNN.md` file in `<cwd>/BUGS/`. If the file doesn't exist, say so and list the bugs
-that do.
+`bug-NNN.md` file in `<cwd>/.project/BUGS/`. If the file doesn't exist, say so and list
+the bugs that do.
 
 ## Update (`/bug update bug-XXX`)
 
@@ -152,18 +153,46 @@ remote AND `gh` is available, also open a GitHub issue mirroring the bug:
    - always `type:bug`, `status:open`
    - `severity:<low|med|high|critical>` — only if the `Severity` field was set
    - `bump:<patch|minor|major>` — only if the `Bump` field was set
-4. Create it: `gh issue create --title "<title>" --body-file BUGS/bug-NNN.md --label type:bug,status:open[,severity:X][,bump:X]`
+4. Create it: `gh issue create --title "<title>" --body-file .project/BUGS/bug-NNN.md --label type:bug,status:open[,severity:X][,bump:X]`
 5. If creation fails because a label is missing, run `github-labels.sh` once to create the
    taxonomy, then retry the `gh issue create`.
 6. On success, add an `- Issue: <url>` line under the header in `bug-NNN.md`.
 
+## issue.html dashboard sync
+
+`.project/issue.html` is a static, dependency-free dashboard listing all bugs, features,
+and todos in one table. Keep it in sync whenever a bug is created or its status changes.
+
+1. **Requires the dashboard.** `.project/issue.html` is created by `/project-setup` and is
+   the single source of its structure. If it's missing, skip this sync and tell the user to
+   run `/project-setup` — never create it here.
+2. **Build the row** for this bug (do this after the GitHub issue step so the link is known):
+   ```html
+   <tr data-id="bug-NNN" data-type="bug" data-status="<status>">
+     <td class="t-bug">bug</td>
+     <td><ID-CELL></td>
+     <td><short title></td>
+     <td><status></td>
+     <td><severity-or-dash></td>
+     <td><YYYY-MM-DD></td></tr>
+   ```
+   - `<ID-CELL>` is `<a href="<issue-url>">NNN</a>` when a GitHub issue was created, else plain `NNN`.
+   - Severity cell: the `Severity` value, or `—` if unset.
+3. **Insert or replace.** If a `tr[data-id="bug-NNN"]` already exists, replace that whole
+   `<tr>` (this is how `fix`/`update` reflect a new status). Otherwise insert the new row
+   immediately before the `<!-- /issues -->` marker. Never duplicate a row for the same id.
+
+`update` and `fix` must re-run this sync after changing a field or `Status` so the row
+stays accurate (`Resolved` flips `data-status="resolved"`, which strikes the row through).
+
 ## Procedure
 
 1. Resolve fields via Intake above.
-2. Ensure `BUGS/` exists (`mkdir -p BUGS`).
-3. Compute next `NNN` (scan `BUGS/`, increment, zero-pad).
+2. Ensure `.project/BUGS/` exists (`mkdir -p .project/BUGS`).
+3. Compute next `NNN` (scan `.project/BUGS/`, increment, zero-pad).
 4. **Write immediately** — do NOT ask for confirmation after the TUI is submitted. TUI
    submission IS the confirmation. (Only the `/bug <text>` one-liner path may show a
    draft first, since it had no TUI step.)
 5. Open the GitHub issue if applicable (see **GitHub issue** above).
-6. Report the created path, the issue URL (if any), and a one-line summary.
+6. Sync `.project/issue.html` (see **issue.html dashboard sync** above).
+7. Report the created path, the issue URL (if any), and a one-line summary.

@@ -26,17 +26,15 @@ skills/
 ### Capture & tracking
 | Skill | Purpose |
 |-------|---------|
-| `bug` | Capture a bug into `BUGS/` as a numbered `bug-NNN.md`; TUI intake, plus `update`/`fix` flows. |
-| `feat` | Capture a feature into `FEATURES/` as a numbered `feat-NNN.md`. Same format as `bug`. |
-| `todo` | Display/manage `TODO.md` — incomplete items sorted to top, completed grouped at bottom. |
-| `agent-project-setup` | Scaffold (or audit + repair) `BACKLOG/`, `BUGS/`, and `WHITEBOARD.md` for a git project. Idempotent. |
+| `bug` | Capture a bug into `.project/BUGS/` as a numbered `bug-NNN.md`; TUI intake, plus `update`/`fix` flows. Syncs `.project/issue.html`. |
+| `feat` | Capture a feature into `.project/FEATURES/` as a numbered `feat-NNN.md`. Same format as `bug`. Syncs `.project/issue.html`. |
+| `todo` | Display/manage `.project/TODO.md` — incomplete items sorted to top, completed grouped at bottom. Syncs `.project/issue.html`. |
+| `project-setup` | Scaffold (or audit + repair) the `.project/` tree (`BACKLOG/`, `BUGS/`, `FEATURES/`, `DOCS/`, `TODO.md`, `issue.html`) + `WHITEBOARD.md` for a git project. Idempotent. |
 
 ### Session & context
 | Skill | Purpose |
 |-------|---------|
 | `daily` | Summarize the current session into `~/.claude/daily-tracker.md`, then prompt `/clear`. |
-| `whiteboard-get` | Display the current project's `whiteboard.md` scratch file. |
-| `whiteboard-put` | Checkpoint session context into `whiteboard.md` before `/clear`. |
 
 ### Git & commits
 | Skill | Purpose |

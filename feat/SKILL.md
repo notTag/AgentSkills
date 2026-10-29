@@ -2,8 +2,9 @@
 name: feat
 version: 1.0.0
 description: |
-  Capture a feature into the current project's FEATURES/ directory as a numbered
-  markdown file (feat-NNN.md). Parses a one-liner when given; falls back to
+  Capture a feature into the current project's .project/FEATURES/ directory as a numbered
+  markdown file (feat-NNN.md), and add it to the .project/issue.html dashboard.
+  Parses a one-liner when given; falls back to
   interactive intake when fields are missing. Trigger on "/feat", "log a feature",
   "capture this feature", "file a feature request".
 allowed-tools:
@@ -14,21 +15,21 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-# feat: Capture a feature to FEATURES/feat-NNN.md
+# feat: Capture a feature to .project/FEATURES/feat-NNN.md
 
-Log a feature as a numbered markdown file in the **current project's** `FEATURES/` directory.
-This skill owns the feature file format. (`agent-project-setup` only scaffolds working
+Log a feature as a numbered markdown file in the **current project's** `.project/FEATURES/`
+directory. This skill owns the feature file format. (`project-setup` only scaffolds working
 dirs; it does not define the per-feature template.)
 
 ## Location
 
-- Always `<cwd>/FEATURES/` — per-project, relative to the current working directory.
-- If `FEATURES/` does not exist, create it (`mkdir -p FEATURES`). Do not require
-  `agent-project-setup` to have run first.
+- Always `<cwd>/.project/FEATURES/` — per-project, relative to the current working directory.
+- If `.project/FEATURES/` does not exist, create it (`mkdir -p .project/FEATURES`). Do not
+  require `project-setup` to have run first.
 
 ## Numbering
 
-1. Scan `FEATURES/` for the highest existing `feat-NNN.md`.
+1. Scan `.project/FEATURES/` for the highest existing `feat-NNN.md`.
 2. Increment, zero-pad to 3 digits. First feature is `001`.
 3. Filename: `feat-NNN.md` (lowercase `feat-`, uppercase `.md`, e.g. `feat-007.md`).
 
@@ -73,8 +74,21 @@ Field rules:
 - **`/feat build feat-XXX`** — work the feature toward delivery (see Build below).
 
 `feat-XXX` may be given as `feat-003`, `003`, or `3` — normalize to the zero-padded
-`feat-NNN.md` file in `<cwd>/FEATURES/`. If the file doesn't exist, say so and list the
-features that do.
+`feat-NNN.md` file in `<cwd>/.project/FEATURES/`. If the file doesn't exist, say so and
+list the features that do.
+
+### Existing-feature discussion / planning
+
+When the invocation names an existing `feat-NNN.md` and asks to discuss, compare options,
+review requirements, or start planning—but does **not** explicitly say `update` or `build`—
+treat it as advisory mode:
+
+1. Read the existing feature and the minimum relevant project context.
+2. Answer or investigate the planning question against its What / Why / Done When.
+3. Do not create another feature, rewrite the feature file, or begin implementation.
+4. If the user later requests a formal implementation plan, save that plan separately;
+   only modify the feature through explicit `update`, and only implement through explicit
+   `build` or an unambiguous direct implementation request.
 
 ## Update (`/feat update feat-XXX`)
 
@@ -148,18 +162,46 @@ remote AND `gh` is available, also open a GitHub issue mirroring the feature:
    - always `type:feat`, `status:open`
    - `priority:<low|med|high>` — only if the `Priority` field was set
    - `bump:<patch|minor|major>` — only if the `Bump` field was set
-4. Create it: `gh issue create --title "<title>" --body-file FEATURES/feat-NNN.md --label type:feat,status:open[,priority:X][,bump:X]`
+4. Create it: `gh issue create --title "<title>" --body-file .project/FEATURES/feat-NNN.md --label type:feat,status:open[,priority:X][,bump:X]`
 5. If creation fails because a label is missing, run `github-labels.sh` once to create the
    taxonomy, then retry the `gh issue create`.
 6. On success, add an `- Issue: <url>` line under the header in `feat-NNN.md`.
 
+## issue.html dashboard sync
+
+`.project/issue.html` is a static, dependency-free dashboard listing all bugs, features,
+and todos in one table. Keep it in sync whenever a feature is created or its status changes.
+
+1. **Requires the dashboard.** `.project/issue.html` is created by `/project-setup` and is
+   the single source of its structure. If it's missing, skip this sync and tell the user to
+   run `/project-setup` — never create it here.
+2. **Build the row** for this feature (do this after the GitHub issue step so the link is known):
+   ```html
+   <tr data-id="feat-NNN" data-type="feat" data-status="<status>">
+     <td class="t-feat">feat</td>
+     <td><ID-CELL></td>
+     <td><short title></td>
+     <td><status></td>
+     <td><priority-or-dash></td>
+     <td><YYYY-MM-DD></td></tr>
+   ```
+   - `<ID-CELL>` is `<a href="<issue-url>">NNN</a>` when a GitHub issue was created, else plain `NNN`.
+   - Priority cell: the `Priority` value, or `—` if unset.
+3. **Insert or replace.** If a `tr[data-id="feat-NNN"]` already exists, replace that whole
+   `<tr>` (this is how `build`/`update` reflect a new status). Otherwise insert the new row
+   immediately before the `<!-- /issues -->` marker. Never duplicate a row for the same id.
+
+`update` and `build` must re-run this sync after changing a field or `Status` so the row
+stays accurate (`Done` flips `data-status="done"`, which strikes the row through).
+
 ## Procedure
 
 1. Resolve fields via Intake above.
-2. Ensure `FEATURES/` exists (`mkdir -p FEATURES`).
-3. Compute next `NNN` (scan `FEATURES/`, increment, zero-pad).
+2. Ensure `.project/FEATURES/` exists (`mkdir -p .project/FEATURES`).
+3. Compute next `NNN` (scan `.project/FEATURES/`, increment, zero-pad).
 4. **Write immediately** — do NOT ask for confirmation after the TUI is submitted. TUI
    submission IS the confirmation. (Only the `/feat <text>` one-liner path may show a
    draft first, since it had no TUI step.)
 5. Open the GitHub issue if applicable (see **GitHub issue** above).
-6. Report the created path, the issue URL (if any), and a one-line summary.
+6. Sync `.project/issue.html` (see **issue.html dashboard sync** above).
+7. Report the created path, the issue URL (if any), and a one-line summary.
