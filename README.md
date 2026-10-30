@@ -35,6 +35,7 @@ skills/
 | Skill | Purpose |
 |-------|---------|
 | `daily` | Summarize the current session into `~/.claude/daily-tracker.md`, then prompt `/clear`. |
+| `session-handoff` | Bridge context across `/clear` — `put` snapshots session state into `.session-handoff.md`, `get` restores it in the next session. |
 
 ### Git & commits
 | Skill | Purpose |
