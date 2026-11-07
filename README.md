@@ -42,6 +42,7 @@ skills/
 |-------|---------|
 | `commit-audit` | Audit a project's pre-commit hooks against the gates expected for its stack. Read-only. |
 | `create-commit-msg` | Generate a human-sounding commit message from a diff (runs it through `humanizer`). |
+| `light-review` | Review a PR/MR (given, inferred from context, or asked), trim unnecessary code, push fixes, merge if it clears the bar. |
 
 ### Knowledge
 | Skill | Purpose |
