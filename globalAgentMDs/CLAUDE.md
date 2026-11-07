@@ -10,6 +10,27 @@
 
 ---
 
+## Response Footer — PR / Worktree / Branch
+
+- End EVERY response with this footer, last thing in the reply — user runs many agents in parallel windows and needs to see where each one stands at a glance
+- Check fresh state before writing it (don't guess from earlier turns): `git branch --show-current`, `git rev-parse --git-dir --git-common-dir` (differ → linked worktree), `gh pr view --json url,state`
+- Format:
+  ```
+  PR: <merged-pr-url> MERGED
+      <open-pr-url> open
+  Worktree: <absolute-worktree-path>
+  Branch: <branch-name>
+  ```
+- PR line rules:
+  - PR merged earlier this session → its URL + `MERGED`; open PR for the current branch → its URL + `open`, on the line beneath
+  - Only one of the two exists → just that one line
+  - Neither → `PR: -`
+- Worktree: linked worktree's absolute path; main checkout (not a worktree) → `Worktree: -`
+- Branch: always present; on main → `Branch: main`
+- Not in a git repo → `PR: -`, `Worktree: -`, `Branch: -`
+
+---
+
 ## Feature Development Flow
 
 - Default flow for focused work (feature/bug/chore), GSD-independent: named tmux session → git worktree off latest `main` → focused work → PR → review → cleanup → pull main. One worktree per task = no blocking, parallel work, resumable from any shell.
