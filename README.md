@@ -4,7 +4,7 @@ A collection of [Claude Code](https://claude.com/claude-code) skills — self-co
 
 ## What's a skill?
 
-A skill is a folder with a `SKILL.md` (instructions + YAML frontmatter holding the `name`, `description`, and trigger phrases) plus any supporting files. Claude reads the description to decide when a skill is relevant, then loads its `SKILL.md` to perform the task. Most are invokable by slash command (e.g. `/bug`) or natural-language trigger ("log a bug").
+A skill is a folder with a `SKILL.md` (instructions + YAML frontmatter holding the `name`, `description`, and trigger phrases) plus any supporting files. Claude reads the description to decide when a skill is relevant, then loads its `SKILL.md` to perform the task. Most are invokable by slash command (e.g. `/daily`) or natural-language trigger ("log and clear").
 
 Each skill directory also carries a short `README.md` documenting its purpose, usage, and triggers.
 
@@ -16,20 +16,13 @@ skills/
 │   ├── SKILL.md           #   instructions + frontmatter
 │   └── README.md          #   human-facing summary
 ├── vendor/                # third-party skills, kept separate
+├── archive/               # retired first-party skills, not symlinked into ~/.claude/skills
 ├── globalAgentMDs/        # source-of-truth global Claude config (CLAUDE.md, RTK.md)
 ├── bootstrap.sh           # symlink the global config into ~/.claude on a machine
 └── CLAUDE.md              # context-mode routing rules for this repo
 ```
 
 ## First-party skills
-
-### Capture & tracking
-| Skill | Purpose |
-|-------|---------|
-| `bug` | Capture a bug into `.project/BUGS/` as a numbered `bug-NNN.md`; TUI intake, plus `update`/`fix` flows. Syncs `.project/issue.html`. |
-| `feat` | Capture a feature into `.project/FEATURES/` as a numbered `feat-NNN.md`. Same format as `bug`. Syncs `.project/issue.html`. |
-| `todo` | Display/manage `.project/TODO.md` — incomplete items sorted to top, completed grouped at bottom. Syncs `.project/issue.html`. |
-| `project-setup` | Scaffold (or audit + repair) the `.project/` tree (`BACKLOG/`, `BUGS/`, `FEATURES/`, `DOCS/`, `TODO.md`, `issue.html`) + `WHITEBOARD.md` for a git project. Idempotent. |
 
 ### Session & context
 | Skill | Purpose |
@@ -90,3 +83,15 @@ New machine: clone this repo, then run `./bootstrap.sh` from the repo root. It b
 
 - `CLAUDE.md` defines context-mode routing rules for working in this repo.
 - `jd-matcher/profile.local.md` is gitignored (personal data) — see `profile.local.example.md`.
+
+## Archived
+
+Retired skills kept for reference under `archive/` — no longer installed. Replaced by the Project Tracker app.
+
+| Skill | Purpose |
+|-------|---------|
+| `bug` | Capture a bug into `.project/BUGS/` as a numbered `bug-NNN.md`; TUI intake, plus `update`/`fix` flows. Syncs `.project/issue.html`. |
+| `feat` | Capture a feature into `.project/FEATURES/` as a numbered `feat-NNN.md`. Same format as `bug`. Syncs `.project/issue.html`. |
+| `todo` | Display/manage `.project/TODO.md` — incomplete items sorted to top, completed grouped at bottom. Syncs `.project/issue.html`. |
+| `project-setup` | Scaffold (or audit + repair) the `.project/` tree (`BACKLOG/`, `BUGS/`, `FEATURES/`, `DOCS/`, `TODO.md`, `issue.html`) + `WHITEBOARD.md` for a git project. Idempotent. |
+
